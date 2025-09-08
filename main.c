@@ -1,7 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-#define STACK_SIZE 100
-#define CELL_skips 100
+#define STACK_SIZE 256
+#define CELL_COUNT 256 
 
 typedef unsigned char uchar;
 
@@ -9,7 +10,7 @@ void execute(char *program)
 {
 	int stack[STACK_SIZE] = {0};
 	int stack_index = 0;
-	uchar cells[CELL_skips] = {0};
+	uchar cells[CELL_COUNT] = {0};
 	char *instr_ptr = program;
 	int cell_index = 0;
 
@@ -56,24 +57,64 @@ void execute(char *program)
 					}
 					stack_index--;
 				}
-
-
 				break;
 			case ']':
 				instr_ptr = stack[stack_index] + program;
 				continue; // Skip incrementing instr_ptr
+			default: break;
 		}
 
 		instr_ptr++;
 	}
 }
 
-int main(void)
+int validate_arguments(int argc, char **argv)
 {
-	// Print "Hello, World!"
-	execute(">++++++++[<+++++++++>-]<.>++++[<+++++++>-]<+.+++++++..+++.>>++++++[<+++++++>-]<++.------------.>++++++[<+++++++++>-]<+.<.+++.------.--------.>>>++++[<++++++++>-]<+.");
+	if (argc < 2)
+	{
+		printf("Missing input file.\n");
+		printf("Usage: \n%s <input_file>\n", argv[0]);
+		return 1;
+	}
+
+	return 0;
+}
+
+char *read_program_from_file(char *filename)
+{
+	FILE *fptr = fopen(filename, "r");
+	
+	if (fptr == NULL)
+	{
+		printf("Unable to find file '%s'\n", filename);
+		exit(1);
+	}
+
+	fseek(fptr, 0, SEEK_END);
+	long file_size = ftell(fptr);
+	fseek(fptr, 0, SEEK_SET);
+
+	char *program = malloc(sizeof(char) * (file_size + 1));
+
+	fread(program, file_size, sizeof(char), fptr);
+
+	fclose(fptr);
+
+	return program;
+}
+
+int main(int argc, char **argv)
+{
+	if (validate_arguments(argc, argv) == 1)
+		return 1;
+
+	char *program = read_program_from_file(argv[1]);
+
+	execute(program);
 
 	printf("\n\nProgram ended successfully\n");
+
+	free(program);
 	return 0;
 }
 
