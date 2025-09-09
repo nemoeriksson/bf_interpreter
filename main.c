@@ -9,40 +9,40 @@ typedef unsigned char uchar;
 void execute(char *program)
 {
 	int stack[STACK_SIZE] = {0};
-	int stack_index = 0;
+	int *stack_ptr = stack;
 	uchar cells[CELL_COUNT] = {0};
 	char *instr_ptr = program;
-	int cell_index = 0;
+	uchar *cell = cells;
 
 	while (*instr_ptr)
 	{
 		switch (*instr_ptr)
 		{
 			case '>':
-				cell_index++;
+				cell++;
 				break;
 			case '<':
-				cell_index--;
+				cell--;
 				break;
 			case '+':
-				cells[cell_index]++;
+				(*cell)++;
 				break;
 			case '-':
-				cells[cell_index]--;
+				(*cell)--;
 				break;
 			case '.':
-				printf("%c", cells[cell_index]);
+				printf("%c", (*cell));
 				break;
 			case ',':
-				cells[cell_index] = getchar();
+				*cell = getchar();
 				break;
 			case '[':
-				if (stack[stack_index] != instr_ptr - program)
-					stack[++stack_index] = instr_ptr - program;
+				if (*stack_ptr != instr_ptr - program)
+					(*++stack_ptr) = instr_ptr - program;
 
 				instr_ptr++;
 
-				if (cells[cell_index] != 0)
+				if (*cell != 0)
 					continue;
 
 				else 
@@ -55,11 +55,11 @@ void execute(char *program)
 						if (*instr_ptr == '[') skips++;
 						else if (*instr_ptr == ']') skips--;
 					}
-					stack_index--;
+					stack_ptr--;
 				}
 				break;
 			case ']':
-				instr_ptr = stack[stack_index] + program;
+				instr_ptr = *stack_ptr + program;
 				continue; // Skip incrementing instr_ptr
 			default: break;
 		}
